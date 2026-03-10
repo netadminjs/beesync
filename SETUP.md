@@ -129,16 +129,18 @@ Add these lines — replace the PATH with whatever `which node` returned (minus 
 PATH=/Users/<YOUR_USERNAME>/.nvm/versions/node/<VERSION>/bin:/usr/bin:/bin
 
 # Hourly — sync + full process. Deduplication ensures email/reminders only fire for new conversations.
-0 * * * * cd ~/Projects/Bee && bee sync --output ~/Projects/Bee/sync && node process.js --email --reminders >> ~/Projects/Bee/logs/process.log 2>&1
+0 * * * * cd ~/Projects/Bee && security find-generic-password -s "bee-cli" -w | bee login --token-stdin && bee sync --output ~/Projects/Bee/sync && node process.js --email --reminders >> ~/Projects/Bee/logs/process.log 2>&1
 
 # End of work day — 5:30 PM weekdays (catches anything from the work day)
-30 17 * * 1-5 cd ~/Projects/Bee && node process.js --email --reminders >> ~/Projects/Bee/logs/process.log 2>&1
+30 17 * * 1-5 cd ~/Projects/Bee && security find-generic-password -s "bee-cli" -w | bee login --token-stdin && node process.js --email --reminders >> ~/Projects/Bee/logs/process.log 2>&1
 
 # Late night cleanup — 11:50 PM weekdays (catches any evening meetings, safe due to deduplication)
-50 23 * * 1-5 cd ~/Projects/Bee && bee sync --output ~/Projects/Bee/sync && node process.js --email --reminders >> ~/Projects/Bee/logs/process.log 2>&1
+50 23 * * 1-5 cd ~/Projects/Bee && security find-generic-password -s "bee-cli" -w | bee login --token-stdin && bee sync --output ~/Projects/Bee/sync && node process.js --email --reminders >> ~/Projects/Bee/logs/process.log 2>&1
 ```
 
 > **Note:** If you use nvm and later upgrade Node, update the PATH line to match the new version. Cron errors go to your local mail — check with `cat /var/mail/$USER` if jobs run silently without producing logs.
+>
+> **Why `security find-generic-password` before each sync:** macOS cron can't access the Keychain directly via the Security framework (which is how `bee` reads its token). The `security` CLI tool bypasses this restriction. We use it to re-authenticate before each run so `bee sync` finds a fresh, valid session.
 
 Create the log folder first:
 ```bash

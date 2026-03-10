@@ -151,21 +151,23 @@ which npx
 # e.g. /Users/yourname/.nvm/versions/node/v24.13.1/bin/npx
 ```
 
-Then add to crontab (replace the PATH with the directory from `which npx`):
+Then add to crontab (replace the PATH with the directory from `which node`):
 ```
 # Required: cron uses a bare PATH and won't find node/npx without this
 PATH=/Users/yourname/.nvm/versions/node/v24.13.1/bin:/usr/bin:/bin
 
 # Hourly — sync + full process
-0 * * * * cd ~/Projects/Bee && bee sync --output sync && node process.js --email --reminders >> ~/Projects/Bee/logs/process.log 2>&1
+0 * * * * cd ~/Projects/Bee && security find-generic-password -s "bee-cli" -w | bee login --token-stdin && bee sync --output ~/Projects/Bee/sync && node process.js --email --reminders >> ~/Projects/Bee/logs/process.log 2>&1
 
 # End of work day — 5:30 PM weekdays
-30 17 * * 1-5 cd ~/Projects/Bee && node process.js --email --reminders >> ~/Projects/Bee/logs/process.log 2>&1
+30 17 * * 1-5 cd ~/Projects/Bee && security find-generic-password -s "bee-cli" -w | bee login --token-stdin && node process.js --email --reminders >> ~/Projects/Bee/logs/process.log 2>&1
 
 # Late night cleanup — 11:50 PM weekdays
-50 23 * * 1-5 cd ~/Projects/Bee && bee sync --output sync && node process.js --email --reminders >> ~/Projects/Bee/logs/process.log 2>&1
+50 23 * * 1-5 cd ~/Projects/Bee && security find-generic-password -s "bee-cli" -w | bee login --token-stdin && bee sync --output ~/Projects/Bee/sync && node process.js --email --reminders >> ~/Projects/Bee/logs/process.log 2>&1
 ```
 
+> **Keychain note:** macOS cron can't access the Keychain directly via the Security framework (how `bee` reads its token). The `security` CLI bypasses this — it fetches the token and re-authenticates before each run.
+>
 > If cron runs silently with no log output, check `cat /var/mail/$USER` — cron mails errors to your local account.
 
 Create the log folder first:
