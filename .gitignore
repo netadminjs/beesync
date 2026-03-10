@@ -1,0 +1,25 @@
+# Personal configuration — copy config.example.js to config.js and fill in your values
+config.js
+
+# Synced Bee data — personal conversation transcripts
+sync/
+
+# Runtime logs
+logs/
+
+# Processed conversation tracker — tracks what's been emailed/reminded
+.processed.json
+
+# Personal session notes
+LastSession.md
+SessionPlan.md
+TOMORROW.md
+
+# Legacy notes
+readme.txt
+
+# macOS
+.DS_Store
+
+# Node
+node_modules/
