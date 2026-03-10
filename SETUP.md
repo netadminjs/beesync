@@ -108,46 +108,177 @@ cd ~/Projects/Bee && node process.js
 
 ---
 
-## Mac Mini Only — Cron Job Setup
+## Mac Mini Only — Scheduled Job Setup (launchd)
 
 The Mac Mini at work runs the hourly background sync and the scheduled end-of-day processing.
-**Do not add these cron jobs to other machines.**
+**Do not set these up on other machines.**
+
+macOS launchd user agents are used instead of cron because they run in your full login session with Keychain access — which is required for `bee` to authenticate.
+
+### 1. Find your Node path
 
 ```bash
-# Open crontab editor
-crontab -e
+which node
+# e.g. /Users/yourname/.nvm/versions/node/v24.13.1/bin/node
 ```
 
-First, find your node/npx path:
+### 2. Create the three plist files
+
+Create `~/Library/LaunchAgents/com.beesync.hourly.plist`:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.beesync.hourly</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/zsh</string>
+        <string>-c</string>
+        <string>cd /Users/YOUR_USERNAME/Projects/Bee && bee sync --output /Users/YOUR_USERNAME/Projects/Bee/sync && node process.js --email --reminders</string>
+    </array>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/Users/YOUR_USERNAME/.nvm/versions/node/VERSION/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        <key>HOME</key>
+        <string>/Users/YOUR_USERNAME</string>
+        <key>USER</key>
+        <string>YOUR_USERNAME</string>
+    </dict>
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+    <key>StandardOutPath</key>
+    <string>/Users/YOUR_USERNAME/Library/Logs/beesync/process.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/YOUR_USERNAME/Library/Logs/beesync/process.log</string>
+    <key>RunAtLoad</key>
+    <false/>
+</dict>
+</plist>
+```
+
+Create `~/Library/LaunchAgents/com.beesync.endofday.plist` (5:30 PM weekdays, no sync):
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.beesync.endofday</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/zsh</string>
+        <string>-c</string>
+        <string>cd /Users/YOUR_USERNAME/Projects/Bee && node process.js --email --reminders</string>
+    </array>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/Users/YOUR_USERNAME/.nvm/versions/node/VERSION/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        <key>HOME</key>
+        <string>/Users/YOUR_USERNAME</string>
+        <key>USER</key>
+        <string>YOUR_USERNAME</string>
+    </dict>
+    <key>StartCalendarInterval</key>
+    <array>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>30</integer><key>Weekday</key><integer>1</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>30</integer><key>Weekday</key><integer>2</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>30</integer><key>Weekday</key><integer>3</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>30</integer><key>Weekday</key><integer>4</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>30</integer><key>Weekday</key><integer>5</integer></dict>
+    </array>
+    <key>StandardOutPath</key>
+    <string>/Users/YOUR_USERNAME/Library/Logs/beesync/process.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/YOUR_USERNAME/Library/Logs/beesync/process.log</string>
+    <key>RunAtLoad</key>
+    <false/>
+</dict>
+</plist>
+```
+
+Create `~/Library/LaunchAgents/com.beesync.cleanup.plist` (11:50 PM weekdays, full sync):
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.beesync.cleanup</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/zsh</string>
+        <string>-c</string>
+        <string>cd /Users/YOUR_USERNAME/Projects/Bee && bee sync --output /Users/YOUR_USERNAME/Projects/Bee/sync && node process.js --email --reminders</string>
+    </array>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/Users/YOUR_USERNAME/.nvm/versions/node/VERSION/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        <key>HOME</key>
+        <string>/Users/YOUR_USERNAME</string>
+        <key>USER</key>
+        <string>YOUR_USERNAME</string>
+    </dict>
+    <key>StartCalendarInterval</key>
+    <array>
+        <dict><key>Hour</key><integer>23</integer><key>Minute</key><integer>50</integer><key>Weekday</key><integer>1</integer></dict>
+        <dict><key>Hour</key><integer>23</integer><key>Minute</key><integer>50</integer><key>Weekday</key><integer>2</integer></dict>
+        <dict><key>Hour</key><integer>23</integer><key>Minute</key><integer>50</integer><key>Weekday</key><integer>3</integer></dict>
+        <dict><key>Hour</key><integer>23</integer><key>Minute</key><integer>50</integer><key>Weekday</key><integer>4</integer></dict>
+        <dict><key>Hour</key><integer>23</integer><key>Minute</key><integer>50</integer><key>Weekday</key><integer>5</integer></dict>
+    </array>
+    <key>StandardOutPath</key>
+    <string>/Users/YOUR_USERNAME/Library/Logs/beesync/process.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/YOUR_USERNAME/Library/Logs/beesync/process.log</string>
+    <key>RunAtLoad</key>
+    <false/>
+</dict>
+</plist>
+```
+
+### 3. Create the log directory and load the agents
+
 ```bash
-which node && which npx
+mkdir -p ~/Library/Logs/beesync
+
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.beesync.hourly.plist
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.beesync.endofday.plist
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.beesync.cleanup.plist
 ```
 
-Add these lines — replace the PATH with whatever `which node` returned (minus the `/node` filename):
-```
-# Required: cron runs with a bare PATH and can't find node/npx without this
-PATH=/Users/<YOUR_USERNAME>/.nvm/versions/node/<VERSION>/bin:/usr/bin:/bin
+### 4. Verify they loaded
 
-# Hourly — sync + full process. Deduplication ensures email/reminders only fire for new conversations.
-0 * * * * cd ~/Projects/Bee && security find-generic-password -s "bee-cli" -w | bee login --token-stdin && bee sync --output ~/Projects/Bee/sync && node process.js --email --reminders >> ~/Projects/Bee/logs/process.log 2>&1
-
-# End of work day — 5:30 PM weekdays (catches anything from the work day)
-30 17 * * 1-5 cd ~/Projects/Bee && security find-generic-password -s "bee-cli" -w | bee login --token-stdin && node process.js --email --reminders >> ~/Projects/Bee/logs/process.log 2>&1
-
-# Late night cleanup — 11:50 PM weekdays (catches any evening meetings, safe due to deduplication)
-50 23 * * 1-5 cd ~/Projects/Bee && security find-generic-password -s "bee-cli" -w | bee login --token-stdin && bee sync --output ~/Projects/Bee/sync && node process.js --email --reminders >> ~/Projects/Bee/logs/process.log 2>&1
+```bash
+launchctl list | grep beesync
+# Should show all three with exit status 0
 ```
 
-> **Note:** If you use nvm and later upgrade Node, update the PATH line to match the new version. Cron errors go to your local mail — check with `cat /var/mail/$USER` if jobs run silently without producing logs.
+### 5. Test manually
+
+```bash
+launchctl kickstart -k gui/$(id -u)/com.beesync.hourly
+# Wait ~60 seconds, then check the log:
+cat ~/Library/Logs/beesync/process.log
+```
+
+> **Why launchd instead of cron:** macOS cron cannot access the user Keychain, which is how `bee` stores its auth token. launchd user agents (in `~/Library/LaunchAgents/`) run in your full login session with Keychain access — no workarounds needed.
 >
-> **Why `security find-generic-password` before each sync:** macOS cron can't access the Keychain directly via the Security framework (which is how `bee` reads its token). The `security` CLI tool bypasses this restriction. We use it to re-authenticate before each run so `bee sync` finds a fresh, valid session.
+> **Why `StandardOutPath` instead of `>>`:** The project folder (`~/Projects/Bee`) is a symlink into iCloud Drive. macOS restricts iCloud Drive writes to processes with explicit permission. launchd can open the log file and pass the file descriptor to the shell; shell-level redirection (`>>`) triggers a separate `open()` call which gets blocked. Keeping the log in `~/Library/Logs/beesync/` (outside iCloud) sidesteps this entirely.
+>
+> **Node version:** If you upgrade Node via nvm, update the PATH in all three plists and reload the agents.
 
-Create the log folder first:
-```bash
-mkdir -p ~/Projects/Bee/logs
-```
-
-Note: The 5:30 PM end-of-day run is a safety net. You can still run manually anytime with `./bee-process.sh --email --reminders`. If you already ran it manually, running again is fine — Obsidian overwrites cleanly, email sends a fresh copy, Reminders deduplication is on the roadmap.
+Note: The 5:30 PM end-of-day run is a safety net. You can still run manually anytime with `./bee-process.sh --email --reminders`. Running again is safe — Obsidian overwrites cleanly, email and Reminders deduplicate by conversation ID.
 
 ---
 

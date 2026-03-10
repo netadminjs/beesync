@@ -141,38 +141,34 @@ Copy the terms that make sense for your context into `config.js`. Skip anything 
 
 ---
 
-## Cron Jobs (optional — one machine only)
+## Scheduled Jobs (optional — one machine only)
 
-To run automatically in the background, add these to `crontab -e` on one machine.
+To run automatically in the background, use macOS **launchd** user agents on one machine. Do not set these up on multiple machines — deduplication handles re-runs, but you only need one machine syncing.
 
-First find your node path:
+> **Why launchd, not cron:** macOS cron cannot access the user Keychain, which is how `bee` stores its auth token. launchd user agents run in your full login session with Keychain access.
+
+See [SETUP.md](SETUP.md) for the full plist files. The quick version:
+
 ```bash
-which npx
-# e.g. /Users/yourname/.nvm/versions/node/v24.13.1/bin/npx
-```
+# 1. Create log directory (outside iCloud — required for launchd write access)
+mkdir -p ~/Library/Logs/beesync
 
-Then add to crontab (replace the PATH with the directory from `which node`):
-```
-# Required: cron uses a bare PATH and won't find node/npx without this
-PATH=/Users/yourname/.nvm/versions/node/v24.13.1/bin:/usr/bin:/bin
+# 2. Create three plist files in ~/Library/LaunchAgents/:
+#    com.beesync.hourly.plist     — every hour at :00
+#    com.beesync.endofday.plist   — 5:30 PM Mon-Fri
+#    com.beesync.cleanup.plist    — 11:50 PM Mon-Fri
+#    (see SETUP.md for full plist content)
 
-# Hourly — sync + full process
-0 * * * * cd ~/Projects/Bee && security find-generic-password -s "bee-cli" -w | bee login --token-stdin && bee sync --output ~/Projects/Bee/sync && node process.js --email --reminders >> ~/Projects/Bee/logs/process.log 2>&1
+# 3. Load them
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.beesync.hourly.plist
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.beesync.endofday.plist
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.beesync.cleanup.plist
 
-# End of work day — 5:30 PM weekdays
-30 17 * * 1-5 cd ~/Projects/Bee && security find-generic-password -s "bee-cli" -w | bee login --token-stdin && node process.js --email --reminders >> ~/Projects/Bee/logs/process.log 2>&1
+# 4. Verify
+launchctl list | grep beesync
 
-# Late night cleanup — 11:50 PM weekdays
-50 23 * * 1-5 cd ~/Projects/Bee && security find-generic-password -s "bee-cli" -w | bee login --token-stdin && bee sync --output ~/Projects/Bee/sync && node process.js --email --reminders >> ~/Projects/Bee/logs/process.log 2>&1
-```
-
-> **Keychain note:** macOS cron can't access the Keychain directly via the Security framework (how `bee` reads its token). The `security` CLI bypasses this — it fetches the token and re-authenticates before each run.
->
-> If cron runs silently with no log output, check `cat /var/mail/$USER` — cron mails errors to your local account.
-
-Create the log folder first:
-```bash
-mkdir -p ~/Projects/Bee/logs
+# 5. Check logs
+cat ~/Library/Logs/beesync/process.log
 ```
 
 ## Project Structure
