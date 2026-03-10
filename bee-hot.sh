@@ -20,7 +20,7 @@ echo "╚═══════════════════════�
 echo ""
 
 echo "▶ Syncing latest Bee data..."
-npx @beeai/cli sync --output "$SYNC_OUTPUT"
+bee sync --output "$SYNC_OUTPUT"
 if [ $? -ne 0 ]; then
   echo "❌ Sync failed. Run 'npx @beeai/cli status' to check your login."
   exit 1

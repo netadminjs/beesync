@@ -1,32 +1,19 @@
 # Bee CLI Setup & Sync Guide
 
 ## Key Paths
-- **Bee project folder:** `~/Projects/Bee/` (symlink → iCloud)
-- **Synced data:** `~/Projects/Bee/sync/`
+- **Bee project folder:** wherever you cloned or placed the project
+- **Synced data:** `<project>/sync/`
 - **Obsidian vault:** `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/<YourVaultName>/`
 - **Obsidian BEE folder:** `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/<YourVaultName>/BEE/`
+- **Scheduled job logs:** `~/Library/Logs/beesync/process.log`
 
 ---
 
-## Device Setup Guide
-
-### ✅ MacBook Air (Home) — DONE
-Everything below was completed on March 9, 2026.
-
-### ✅ Mac Mini (Work) — DONE
-Completed March 10, 2026. Cron jobs configured.
-
-### 🔲 MacBook Neo (Work, arriving this week) — TODO
-Follow "New Machine Setup" below. No cron job on this one.
-
----
-
-## One-Time Setup (already done on MacBook Air — for reference)
+## One-Time Setup
 
 ### 1. Unlock Developer Mode in Bee iOS app
 - Open Bee app → Settings → tap the version number **5 times**
 - Developer Mode toggle will appear and enable it
-- ✅ Done
 
 ### 2. Prerequisites
 ```bash
@@ -60,22 +47,22 @@ npx @beeai/cli status
 # Should show: Verified as <Your Name>
 ```
 
-### 6. The project folder is already in iCloud — nothing to clone
-Since `~/Projects/Bee/` is a symlink to iCloud, all scripts are already there on every Mac.
+### 6. Get the project files
+Clone the repo or copy the project to your machine:
 ```bash
-# Verify the scripts are present
-ls ~/Projects/Bee/
-# Should show: PLAN.md  SETUP.md  bee-process.sh  process.js  sync/
+git clone https://github.com/netadminjs/beesync.git ~/Projects/Bee
+# or place it wherever you prefer
 ```
 
-### 7. Make the shell script executable
+### 7. Make the shell scripts executable
 ```bash
-chmod +x ~/Projects/Bee/bee-process.sh
+chmod +x ~/Projects/Bee/bee-process.sh ~/Projects/Bee/bee-hot.sh
 ```
 
-### 8. Full sync (first time on a new machine)
+### 8. Full sync (first time)
 ```bash
-bee sync --output ~/Projects/Bee/sync
+cd ~/Projects/Bee
+bee sync --output ./sync
 ```
 This pulls all conversation history down. Takes a minute. Only needed once per machine — after that, incremental sync keeps it current.
 
@@ -96,22 +83,29 @@ npx @beeai/cli login
 # 4. Verify
 npx @beeai/cli status
 
-# 5. Make script executable
-chmod +x ~/Projects/Bee/bee-process.sh
+# 5. Clone the project
+git clone https://github.com/netadminjs/beesync.git ~/Projects/Bee
 
-# 6. Full sync to populate local data
-bee sync --output ~/Projects/Bee/sync
+# 6. Configure
+cp ~/Projects/Bee/config.example.js ~/Projects/Bee/config.js
+# Edit config.js with your vault name, email, name, timezone
 
-# 7. Test the processor
-cd ~/Projects/Bee && node process.js
+# 7. Make scripts executable
+chmod +x ~/Projects/Bee/bee-process.sh ~/Projects/Bee/bee-hot.sh
+
+# 8. Full sync to populate local data
+cd ~/Projects/Bee && bee sync --output ./sync
+
+# 9. Test the processor
+node process.js
 ```
 
 ---
 
-## Mac Mini Only — Scheduled Job Setup (launchd)
+## Scheduled Job Setup (launchd — one machine only)
 
-The Mac Mini at work runs the hourly background sync and the scheduled end-of-day processing.
-**Do not set these up on other machines.**
+Pick one machine to run the scheduled background jobs.
+**Do not set these up on multiple machines** — deduplication ensures only new conversations trigger email and reminders, but you still don't need redundant syncing.
 
 macOS launchd user agents are used instead of cron because they run in your full login session with Keychain access — which is required for `bee` to authenticate.
 
@@ -320,7 +314,7 @@ npx @beeai/cli now                                  # Recent conversations
 npx @beeai/cli today                                # Today's brief
 npx @beeai/cli conversations                        # List all conversations
 npx @beeai/cli conversations get <id>               # Full conversation detail
-bee sync --output ~/Projects/Bee/sync    # Full sync
+bee sync --output ./sync                 # Full sync (run from project dir)
 npx @beeai/cli changed --json                       # Incremental — what changed since last cursor
 npx @beeai/cli search "keyword"                     # Search all your data
 npx @beeai/cli facts                                # Facts Bee learned about you
@@ -382,8 +376,8 @@ Each conversation file contains:
 
 ## Important Notes
 - **Phone proximity:** Not required. Bee uploads to cloud servers. Mac just needs internet.
-- **Sync lag:** Near-instant. Confirmed March 9, 2026 — recording appeared within seconds.
-- **Multiple runs per day:** Safe for Obsidian and email. Reminders deduplication coming soon.
-- **Cron job:** Mac Mini only. Other machines trigger manually.
-- **Email recipients:** configured in `config.js` — set your own addresses there
-- **Never auto-sends to others** — only drafts for external recipients (by design)
+- **Sync lag:** Near-instant — recordings typically appear within seconds of being processed.
+- **Multiple runs per day:** Safe for Obsidian and email. Email and Reminders deduplicate by conversation ID.
+- **Scheduled jobs:** One machine only. Other machines trigger manually with `./bee-process.sh`.
+- **Email recipients:** configured in `config.js` — set your own addresses there.
+- **Never auto-sends to others** — only drafts for external recipients (by design).

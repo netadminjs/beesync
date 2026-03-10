@@ -164,7 +164,7 @@ if (!fs.existsSync(configPath)) {
 
 section('Data');
 
-const syncDir = path.join(process.env.HOME, 'Projects/Bee/sync/conversations');
+const syncDir = path.join(__dirname, 'sync/conversations');
 if (fs.existsSync(syncDir)) {
   const dateDirs = fs.readdirSync(syncDir).filter(f => {
     try { return fs.statSync(path.join(syncDir, f)).isDirectory(); } catch { return false; }
@@ -172,17 +172,17 @@ if (fs.existsSync(syncDir)) {
   if (dateDirs.length > 0) {
     ok(`Sync folder has data (${dateDirs.length} days of conversations)`);
   } else {
-    warn('Sync folder exists but is empty', 'Run: bee sync --output ~/Projects/Bee/sync');
+    warn('Sync folder exists but is empty', 'Run: bee sync --output ./sync');
   }
 } else {
-  warn('Sync folder not found — no data yet', 'Run: bee sync --output ~/Projects/Bee/sync');
+  warn('Sync folder not found — no data yet', 'Run: bee sync --output ./sync');
 }
 
-const logsDir = path.join(process.env.HOME, 'Projects/Bee/logs');
-if (fs.existsSync(logsDir)) {
-  ok('Logs folder exists');
+const launchdLogsDir = path.join(process.env.HOME, 'Library/Logs/beesync');
+if (fs.existsSync(launchdLogsDir)) {
+  ok('launchd log folder exists (~/Library/Logs/beesync/)');
 } else {
-  warn('Logs folder missing', 'Run: mkdir -p ~/Projects/Bee/logs');
+  warn('launchd log folder missing — needed if you use scheduled jobs', 'Run: mkdir -p ~/Library/Logs/beesync');
 }
 
 section('Scripts');
@@ -201,16 +201,16 @@ for (const script of ['bee-process.sh', 'bee-hot.sh']) {
   }
 }
 
-// ─── Cron PATH ────────────────────────────────────────────────────────────────
+// ─── launchd PATH ─────────────────────────────────────────────────────────────
 
-section('Cron Setup');
+section('Scheduled Jobs (launchd)');
 
 if (nodePath) {
   const nodeBinDir = path.dirname(nodePath);
-  console.log(`  ℹ️  Add this line to the top of your crontab (run: crontab -e):\n`);
-  console.log(`     PATH=${nodeBinDir}:/usr/bin:/bin\n`);
-  console.log(`  ℹ️  Without it, cron can't find node or npx and will fail silently.`);
-  console.log(`     If cron runs but produces no log output, check: cat /var/mail/$USER`);
+  console.log(`  ℹ️  If setting up launchd agents, use this PATH in your plist EnvironmentVariables:\n`);
+  console.log(`     ${nodeBinDir}:/usr/bin:/bin:/usr/sbin:/sbin\n`);
+  console.log(`  ℹ️  See SETUP.md for the full plist files and setup instructions.`);
+  console.log(`     Logs go to: ~/Library/Logs/beesync/process.log`);
 }
 
 // ─── Summary ──────────────────────────────────────────────────────────────────
@@ -229,5 +229,5 @@ if (failed === 0 && warned === 0) {
   if (warned > 0) {
     console.log(`⚠️  ${warned} warning${warned !== 1 ? 's' : ''} to review.`);
   }
-  console.log(`\n   Fix the items above and run: node bee-check.js\n`);
+  console.log(`\n   Fix the items above and run: node bee-pre-check.js\n`);
 }
