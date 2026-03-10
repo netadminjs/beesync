@@ -108,7 +108,7 @@ cd ~/Projects/Bee && node process.js
 
 ---
 
-## Mac Mini Only — Cron Job Setup (TODO)
+## Mac Mini Only — Cron Job Setup
 
 The Mac Mini at work runs the hourly background sync and the scheduled end-of-day processing.
 **Do not add these cron jobs to other machines.**
