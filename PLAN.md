@@ -29,20 +29,10 @@
 
 ## 🔲 Immediate — Next Session
 
-### Mac Mini Setup (when back at work)
-- [ ] Install Node + Bee CLI on Mac Mini
-- [ ] Log in and verify
-- [ ] Set up three cron jobs (Mac Mini only):
-  ```
-  # Hourly — sync + process (deduplication ensures no duplicate emails/reminders)
-  0 * * * * cd ~/Projects/Bee && npx @beeai/cli sync --output sync && node process.js --email --reminders
-
-  # 5:30 PM weekdays — end of work day
-  30 17 * * 1-5 cd ~/Projects/Bee && node process.js --email --reminders
-
-  # 11:50 PM weekdays — catches any evening meetings
-  50 23 * * 1-5 cd ~/Projects/Bee && npx @beeai/cli sync --output sync && node process.js --email --reminders
-  ```
+### ✅ Mac Mini Setup — DONE (March 10, 2026)
+- [x] Install Node + Bee CLI on Mac Mini
+- [x] Log in and verify
+- [x] Set up three cron jobs (PATH fix required for nvm — see SETUP.md)
 
 ### MacBook Neo Setup (arriving this week)
 - [ ] Install Node + Bee CLI
