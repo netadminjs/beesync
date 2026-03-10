@@ -172,10 +172,10 @@ if (fs.existsSync(syncDir)) {
   if (dateDirs.length > 0) {
     ok(`Sync folder has data (${dateDirs.length} days of conversations)`);
   } else {
-    warn('Sync folder exists but is empty', 'Run: npx @beeai/cli sync --output ~/Projects/Bee/sync');
+    warn('Sync folder exists but is empty', 'Run: bee sync --output ~/Projects/Bee/sync');
   }
 } else {
-  warn('Sync folder not found — no data yet', 'Run: npx @beeai/cli sync --output ~/Projects/Bee/sync');
+  warn('Sync folder not found — no data yet', 'Run: bee sync --output ~/Projects/Bee/sync');
 }
 
 const logsDir = path.join(process.env.HOME, 'Projects/Bee/logs');

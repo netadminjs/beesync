@@ -75,7 +75,7 @@ chmod +x ~/Projects/Bee/bee-process.sh
 
 ### 8. Full sync (first time on a new machine)
 ```bash
-npx @beeai/cli sync --output ~/Projects/Bee/sync
+bee sync --output ~/Projects/Bee/sync
 ```
 This pulls all conversation history down. Takes a minute. Only needed once per machine — after that, incremental sync keeps it current.
 
@@ -100,7 +100,7 @@ npx @beeai/cli status
 chmod +x ~/Projects/Bee/bee-process.sh
 
 # 6. Full sync to populate local data
-npx @beeai/cli sync --output ~/Projects/Bee/sync
+bee sync --output ~/Projects/Bee/sync
 
 # 7. Test the processor
 cd ~/Projects/Bee && node process.js
@@ -129,13 +129,13 @@ Add these lines — replace the PATH with whatever `which node` returned (minus 
 PATH=/Users/<YOUR_USERNAME>/.nvm/versions/node/<VERSION>/bin:/usr/bin:/bin
 
 # Hourly — sync + full process. Deduplication ensures email/reminders only fire for new conversations.
-0 * * * * cd ~/Projects/Bee && npx @beeai/cli sync --output ~/Projects/Bee/sync && node process.js --email --reminders >> ~/Projects/Bee/logs/process.log 2>&1
+0 * * * * cd ~/Projects/Bee && bee sync --output ~/Projects/Bee/sync && node process.js --email --reminders >> ~/Projects/Bee/logs/process.log 2>&1
 
 # End of work day — 5:30 PM weekdays (catches anything from the work day)
 30 17 * * 1-5 cd ~/Projects/Bee && node process.js --email --reminders >> ~/Projects/Bee/logs/process.log 2>&1
 
 # Late night cleanup — 11:50 PM weekdays (catches any evening meetings, safe due to deduplication)
-50 23 * * 1-5 cd ~/Projects/Bee && npx @beeai/cli sync --output ~/Projects/Bee/sync && node process.js --email --reminders >> ~/Projects/Bee/logs/process.log 2>&1
+50 23 * * 1-5 cd ~/Projects/Bee && bee sync --output ~/Projects/Bee/sync && node process.js --email --reminders >> ~/Projects/Bee/logs/process.log 2>&1
 ```
 
 > **Note:** If you use nvm and later upgrade Node, update the PATH line to match the new version. Cron errors go to your local mail — check with `cat /var/mail/$USER` if jobs run silently without producing logs.
@@ -187,7 +187,7 @@ npx @beeai/cli now                                  # Recent conversations
 npx @beeai/cli today                                # Today's brief
 npx @beeai/cli conversations                        # List all conversations
 npx @beeai/cli conversations get <id>               # Full conversation detail
-npx @beeai/cli sync --output ~/Projects/Bee/sync    # Full sync
+bee sync --output ~/Projects/Bee/sync    # Full sync
 npx @beeai/cli changed --json                       # Incremental — what changed since last cursor
 npx @beeai/cli search "keyword"                     # Search all your data
 npx @beeai/cli facts                                # Facts Bee learned about you

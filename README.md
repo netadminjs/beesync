@@ -72,7 +72,7 @@ chmod +x bee-process.sh bee-hot.sh
 ### 6. Initial sync
 
 ```bash
-npx @beeai/cli sync --output ~/Projects/Bee/sync
+bee sync --output ~/Projects/Bee/sync
 ```
 
 ### 7. Test it
@@ -157,13 +157,13 @@ Then add to crontab (replace the PATH with the directory from `which npx`):
 PATH=/Users/yourname/.nvm/versions/node/v24.13.1/bin:/usr/bin:/bin
 
 # Hourly — sync + full process
-0 * * * * cd ~/Projects/Bee && npx @beeai/cli sync --output sync && node process.js --email --reminders >> ~/Projects/Bee/logs/process.log 2>&1
+0 * * * * cd ~/Projects/Bee && bee sync --output sync && node process.js --email --reminders >> ~/Projects/Bee/logs/process.log 2>&1
 
 # End of work day — 5:30 PM weekdays
 30 17 * * 1-5 cd ~/Projects/Bee && node process.js --email --reminders >> ~/Projects/Bee/logs/process.log 2>&1
 
 # Late night cleanup — 11:50 PM weekdays
-50 23 * * 1-5 cd ~/Projects/Bee && npx @beeai/cli sync --output sync && node process.js --email --reminders >> ~/Projects/Bee/logs/process.log 2>&1
+50 23 * * 1-5 cd ~/Projects/Bee && bee sync --output sync && node process.js --email --reminders >> ~/Projects/Bee/logs/process.log 2>&1
 ```
 
 > If cron runs silently with no log output, check `cat /var/mail/$USER` — cron mails errors to your local account.
