@@ -22,22 +22,10 @@
 - [x] SETUP.md — full reconnect + new machine guide
 - [x] PLAN.md — this file
 - [x] `bee-tune.js` — keyword tuner: frequency analysis across high/low conversation buckets to suggest MY_HIGH_KEYWORDS / MY_LOW_KEYWORDS additions
-- [x] `bee-pre-check.js` — pre-flight check: verifies all prerequisites, config, data, scripts, and outputs the exact crontab PATH line for the current machine. Doubles as post-setup validator.
+- [x] `bee-pre-check.js` — pre-flight check: verifies all prerequisites, config, data, and scripts. `--setup-permissions` grants macOS TCC permissions upfront so launchd runs silently.
 - [x] `config.js` / `config.example.js` — personal settings separated from public code
-
----
-
-## 🔲 Immediate — Next Session
-
-### ✅ Mac Mini Setup — DONE (March 10, 2026)
-- [x] Install Node + Bee CLI on Mac Mini
-- [x] Log in and verify
-- [x] Set up three cron jobs (PATH fix required for nvm — see SETUP.md)
-
-### MacBook Neo Setup (arriving this week)
-- [ ] Install Node + Bee CLI
-- [ ] Log in and verify
-- [ ] No cron jobs — manual trigger only
+- [x] launchd user agents — replaces cron; runs in full login session with Keychain access (hourly, end-of-day, cleanup, monthly tune)
+- [x] `bee-tune.js --backlog` — appends monthly keyword suggestions to `local/keyword-backlog.md` with Apple Reminder; `local/` is gitignored and machine-local
 
 ---
 
