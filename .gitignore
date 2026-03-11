@@ -1,6 +1,10 @@
 # Personal configuration — copy config.example.js to config.js and fill in your values
 config.js
 
+# Personal accumulation files — keyword backlog, notes, local history
+# These build up over time and are specific to your machine and recordings
+local/
+
 # Synced Bee data — personal conversation transcripts
 sync/
 

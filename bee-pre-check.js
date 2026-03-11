@@ -4,17 +4,71 @@
  * Bee Environment Check
  *
  * Verifies your setup before first run. Checks for all dependencies, confirms
- * your config is valid, and tells you exactly what PATH line to add to crontab.
+ * your config is valid, and tells you exactly what PATH line to use for launchd.
  *
- * Usage: node bee-pre-check.js
+ * Usage:
+ *   node bee-pre-check.js                   # Full environment check
+ *   node bee-pre-check.js --setup-permissions  # Grant macOS permissions interactively
  *
  * Run this when setting up a new machine. Fix any ❌ items before running the
  * processor. ⚠️ warnings are worth reviewing but won't block basic operation.
+ *
+ * --setup-permissions
+ *   macOS requires explicit permission for scripts to access Reminders, Mail,
+ *   and Calendar. Run this flag once from Terminal to grant everything upfront
+ *   before launchd ever asks — so background jobs run silently without pop-ups.
  */
 
 const fs   = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
+
+// ─── Permissions setup mode ───────────────────────────────────────────────────
+
+if (process.argv.includes('--setup-permissions')) {
+  console.log(`\n🐝 Bee Permission Setup`);
+  console.log(`   Granting macOS permissions so background jobs run without pop-ups.`);
+  console.log(`   Click "Allow" or "OK" if any dialogs appear.\n`);
+
+  const checks = [
+    {
+      name: 'Reminders',
+      script: `tell application "Reminders" to count lists`,
+      hint:  'Used to add action items to Apple Reminders.'
+    },
+    {
+      name: 'Mail (send)',
+      script: `tell application "Mail" to count every account`,
+      hint:  'Used to send the daily digest email.'
+    },
+    {
+      name: 'Mail (drafts)',
+      script: `tell application "Mail" to count (every message of inbox)`,
+      hint:  'Used to create follow-up email drafts.'
+    },
+  ];
+
+  for (const check of checks) {
+    process.stdout.write(`  Checking ${check.name}... `);
+    try {
+      execSync(`osascript -e '${check.script}'`, { stdio: 'pipe' });
+      console.log(`✅  Already granted`);
+    } catch (e) {
+      // Try once more — the first attempt triggers the dialog; second confirms
+      try {
+        execSync(`osascript -e '${check.script}'`, { stdio: 'pipe' });
+        console.log(`✅  Permission granted`);
+      } catch (e2) {
+        console.log(`⚠️   Could not verify — if a dialog appeared, click Allow then re-run`);
+        console.log(`       (${check.hint})`);
+      }
+    }
+  }
+
+  console.log(`\n   Done. Background jobs should now run without permission pop-ups.`);
+  console.log(`   If a pop-up still appears, click Allow — it only asks once per permission.\n`);
+  process.exit(0);
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
