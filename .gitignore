@@ -18,6 +18,12 @@ logs/
 LastSession.md
 SessionPlan.md
 TOMORROW.md
+LAST_SESSION.md
+SESSION_PLAN.md
+CHANGELOG.md
+
+# Backup files
+*.bak
 
 # Legacy notes
 readme.txt
