@@ -244,6 +244,11 @@ function sendEmail(dateLabel, md, todos, schedules, ideas, newConversations, tra
     console.log(`  📧 Email skipped — no new conversations since last email`);
     return tracker;
   }
+  if (todos.length === 0 && schedules.length === 0 && ideas.length === 0) {
+    console.log(`  📧 Email skipped — new conversations but no actionable items`);
+    tracker.emailed.push(...newIds);
+    return tracker;
+  }
 
   const subject = `Bee Daily Digest — ${dateLabel}`;
 
