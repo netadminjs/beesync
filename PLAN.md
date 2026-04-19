@@ -46,7 +46,7 @@
 - [ ] **Calendar cross-reference** — match Bee recording timestamps to calendar events
 - [ ] **Retro-update discipline** — update calendar for ad-hoc meetings at end of day
 - [ ] **Attendee list pull** — from matched calendar event → auto-address follow-up drafts
-- [ ] **Speaker labeling** — use attendee list to label "Unknown" speakers in transcripts
+- [ ] **Speaker labeling (calendar signal)** — use attendee list as one input for labeling `Unknown:` speakers; complements fingerprinting in the People Intelligence section below
 - [ ] **Assign action items** to the right person based on who was in the meeting
 - [ ] **Calendar match flag** — store per conversation, re-check on next run if unmatched
 
@@ -64,6 +64,24 @@
 - [ ] **Cross-day linking** — surface related conversations from past recordings
 - [ ] **Natural language search** — "what did I decide about X?" across all recordings
 
+### People Intelligence
+Bee labels speakers only as `James:` or `Unknown:`. Since the device only records when it's with you, you are in every conversation — which makes you a reliable reference speaker and your memory the ground truth for confirming identities. These features turn raw transcripts into a people-aware layer.
+
+- [ ] **Speaker fingerprinting** — build text-based style fingerprints (vocabulary, discourse markers, catchphrases, sentence cadence) for the user and for each clustered Unknown
+- [ ] **Unknown speaker clustering** — group `Unknown:` turns across all recordings by stylistic similarity; rank clusters by frequency (the iPhone Photos approach)
+- [ ] **Confirm-to-label flow** — dashboard surfaces top unknown clusters with sample lines + dates + locations; user confirms identity from memory, cluster is locked in
+- [ ] **Multi-signal triangulation** — combine fingerprint + calendar attendees + location + time-of-day; any two matching signals raise confidence
+- [ ] **Confidence scores first-class** — every attribution carries a score; low-confidence cases surfaced for review, never auto-applied
+- [ ] **One-on-one first, multi-speaker later** — seed fingerprints from high-confidence 1:1 conversations (user + single Unknown), then subtract identified speakers from group recordings to expose the residual
+- [ ] **Relationship graph** — who co-occurs with whom; infer working groups and social circles
+- [ ] **Per-person topic profiles** — word clouds and topic clusters per identified person
+- [ ] **Per-person action/commitment tracking** — actions mentioned alongside each person, outstanding asks
+- [ ] **Talk-time gap alerts** — "haven't spoken with X in N weeks" for people the user wants to stay connected to
+- [ ] **Name disambiguation** — separate multiple people who share a surface name
+- [ ] **Privacy/zone classification** — location + time + speaker ID routes conversations to work/home/personal channels
+- [ ] **Conversation importance scoring** — length × speakers × action density × emotional intensity; surface top-N per week
+- [ ] **Weekly per-person digest** — what each important person said/did this week
+
 ### Archive & Cleanup
 - [ ] **Auto-archive** low-signal conversations after N days
 - [ ] **Duplicate detection** — near-identical conversations from same time period
@@ -76,6 +94,9 @@
 - **Record liberally, filter automatically** — don't add upfront discipline, add end-of-day discipline
 - **If you didn't document it, you aren't finished**
 - **Outlier workflows for outlier situations** — don't rebuild everything for a maybe
+- **You are in every conversation** — Bee only records when device + phone are together; every transcript has the user as a known reference speaker. Downstream algorithms can rely on this.
+- **Augment Bee, don't replace it** — Bee handles the hard first mile (audio → transcripts, summaries, location, timestamps). This pipeline builds the meaning layer on top using cross-references Bee can't see (calendar, wins, git, Reminders, memory).
+- **Memory is the ground truth** — the user was present in every recording; confirmation flows can rely on human recall, not forensic audio replay
 
 ---
 
